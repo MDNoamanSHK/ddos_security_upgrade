@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Sentinel DDoS Detection | SOC Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/script.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">S</span><div><strong>Sentinel</strong><small>NETWORK DEFENSE</small></div></div>
+      <div class="nav-label">WORKSPACE</div>
+      <a class="nav-item active" href="#overview"><span>▦</span> Overview</a>
+      <a class="nav-item" href="#analysis"><span>⌁</span> Traffic analysis</a>
+      <a class="nav-item" href="#evaluation"><span>◫</span> Model evaluation</a>
+      <div class="sidebar-bottom"><div class="status-dot"></div><span>Local ML engine</span><span id="model-status" class="status-text">Checking…</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div><p class="eyebrow">SECURITY OPERATIONS CENTER</p><h1>DDoS Detection Dashboard</h1></div>
+        <div class="top-actions"><span class="live-pill"><i></i> LOCAL ENVIRONMENT</span><button id="logout-button" class="button button-quiet hidden" type="button">Log out</button></div>
+      </header>
+
+      <section id="login-panel" class="panel login-panel hidden">
+        <div class="login-icon">⌑</div><p class="eyebrow">RESTRICTED ACCESS</p><h2>Sign in to Sentinel</h2>
+        <p class="muted">Use the admin credentials printed by <code>setup_security.py</code>.</p>
+        <form id="login-form">
+          <label for="username">Username</label><input id="username" name="username" autocomplete="username" required maxlength="100" value="admin">
+          <label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="1024">
+          <button class="button button-primary full-width" type="submit">Secure sign in <span>→</span></button>
+        </form>
+        <p id="login-message" class="message" role="status"></p>
+      </section>
+
+      <div id="dashboard-content" class="hidden">
+        <section class="notice-row">
+          <div class="notice-icon">✓</div><div><strong>Security controls enabled</strong><p>Authenticated access, upload validation, API rate limits, audit logging and browser security headers are active.</p></div>
+          <span id="feature-count" class="feature-count">— model features</span>
+        </section>
+
+        <section id="overview" class="stats-grid">
+          <article class="stat-card"><div class="stat-top"><span>Total records</span><span class="stat-icon">▤</span></div><strong id="stat-total">—</strong><small>Rows analyzed</small></article>
+          <article class="stat-card"><div class="stat-top"><span>Benign traffic</span><span class="stat-icon green">✓</span></div><strong id="stat-benign">—</strong><small>Predicted normal</small></article>
+          <article class="stat-card"><div class="stat-top"><span>DDoS / attacks</span><span class="stat-icon red">!</span></div><strong id="stat-ddos">—</strong><small>Predicted suspicious</small></article>
+          <article class="stat-card"><div class="stat-top"><span>Detection rate</span><span class="stat-icon purple">↗</span></div><strong id="stat-rate">—</strong><small>Share predicted as attack</small></article>
+        </section>
+
+        <section id="analysis" class="content-grid">
+          <article class="panel upload-panel">
+            <div class="section-heading"><div><p class="eyebrow">TRAFFIC INSPECTION</p><h2>Analyze network traffic</h2></div><span class="step-badge">01</span></div>
+            <p class="muted">Upload a CSV containing every exact feature listed in the loaded model's feature file. No missing features are fabricated.</p>
+            <form id="analyze-form">
+              <label class="drop-zone" for="traffic-file"><span class="upload-icon">↑</span><strong>Choose a network traffic CSV</strong><small>CSV only · maximum 25 MB · up to 100,000 rows</small><span id="selected-file" class="selected-file">No file selected</span></label>
+              <input id="traffic-file" type="file" accept=".csv,text/csv" required>
+              <button id="analyze-button" class="button button-primary full-width" type="submit">Analyze traffic <span>→</span></button>
+            </form>
+            <p id="analysis-message" class="message" role="status"></p>
+            <div class="model-feature-box"><strong>Required model features</strong><p id="feature-list">Loading the saved feature list…</p></div>
+          </article>
+
+          <article class="panel distribution-panel">
+            <div class="section-heading"><div><p class="eyebrow">CLASSIFICATION SUMMARY</p><h2>Traffic distribution</h2></div><span class="step-badge">02</span></div>
+            <div class="donut-wrap"><div id="donut" class="donut"><div class="donut-center"><strong id="donut-total">—</strong><span>records</span></div></div></div>
+            <div class="legend"><div><i class="legend-dot benign-dot"></i><span>Benign</span><strong id="legend-benign">—</strong></div><div><i class="legend-dot ddos-dot"></i><span>DDoS / Attack</span><strong id="legend-ddos">—</strong></div></div>
+            <p class="footnote">Predictions are model estimates, not definitive proof of malicious activity.</p>
+          </article>
+        </section>
+
+        <section class="panel results-panel">
+          <div class="section-heading"><div><p class="eyebrow">LATEST ANALYSIS</p><h2>Detection results</h2></div><button id="download-results" class="button button-secondary" type="button" disabled>Export results CSV ↓</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Record</th><th>Source IP</th><th>Destination IP</th><th>Prediction</th><th>Confidence</th><th>Severity</th></tr></thead><tbody id="results-body"><tr><td colspan="6" class="empty-state">Upload a compatible CSV to view results.</td></tr></tbody></table></div>
+        </section>
+
+        <section id="evaluation" class="panel evaluation-panel">
+          <div class="section-heading"><div><p class="eyebrow">MODEL QUALITY</p><h2>Evaluate model performance</h2></div><span class="step-badge">03</span></div>
+          <p class="muted">Choose a labelled test CSV with the exact model features plus a <code>label</code> column containing only BENIGN/0 and DDoS/ATTACK/1. This tests predictions against known labels.</p>
+          <form id="evaluate-form" class="evaluate-form"><input id="evaluation-file" type="file" accept=".csv,text/csv" required><button id="evaluate-button" class="button button-secondary" type="submit">Evaluate model</button></form>
+          <p id="evaluation-message" class="message" role="status"></p>
+          <div id="evaluation-results" class="evaluation-results hidden">
+            <div class="metric-grid"><div><span>Accuracy</span><strong id="metric-accuracy">—</strong></div><div><span>Precision</span><strong id="metric-precision">—</strong></div><div><span>Recall</span><strong id="metric-recall">—</strong></div><div><span>F1 score</span><strong id="metric-f1">—</strong></div></div>
+            <h3>Confusion matrix</h3><p class="muted small">Rows are actual classes; columns are predicted classes.</p>
+            <div class="table-wrap"><table class="matrix-table"><thead><tr><th>Actual \ Predicted</th><th>Benign</th><th>DDoS / Attack</th></tr></thead><tbody><tr><th>Benign</th><td id="cm-00">—</td><td id="cm-01">—</td></tr><tr><th>DDoS / Attack</th><td id="cm-10">—</td><td id="cm-11">—</td></tr></tbody></table></div>
+          </div>
+        </section>
+        <footer><span>Sentinel · Student SOC demonstration</span><span>Audit log: <code>logs/security.log</code></span></footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
